@@ -1,4 +1,4 @@
-from .utils import whitespace_tokenize, _is_whitespace, _is_punctuation, _is_control
+from src.utils import whitespace_tokenize, _is_whitespace, _is_punctuation, _is_control
 import unicodedata
 
 

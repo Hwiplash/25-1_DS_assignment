@@ -8,7 +8,7 @@ import sys
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-from src.word_piece_tokenizer.WordPieceTokenizer import WordpieceTokenizer
+from src.WordPieceTokenizer import WordpieceTokenizer
 
 
 class TestTokenizer(unittest.TestCase):
@@ -105,7 +105,7 @@ class TestTokenizer(unittest.TestCase):
 
     def test_random_sentences(self):
         path = os.path.join(str(Path(__file__).resolve().parent), "tests.txt")
-        with open(path, 'r') as f:
+        with open(path, 'r', encoding='utf-8') as f:
             sentences = f.read().split('\n')
             for s in sentences:
                 lib_res, my_res = self.tokenize_with_both_tokenizer(s)

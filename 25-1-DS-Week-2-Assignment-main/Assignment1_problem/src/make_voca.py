@@ -1,7 +1,7 @@
 import math 
 from collections import defaultdict, Counter
 from pathlib import Path
-from utils import whitespace_tokenize
+from src.utils import whitespace_tokenize
 
 def get_corpus(file_path):
     """파일에서 모든 텍스트 라인을 읽어 리스트로 반환합니다."""
@@ -31,6 +31,11 @@ def get_pair_stats(vocab):
     pairs = defaultdict(int)
     # TODO: 각 token_seq에서 인접한 토큰 쌍을 추출하여, 전체 vocabulary에서의 빈도를 계산하는 코드를 작성하세요.
     # 예: for token_seq, freq in vocab.items(): ... 
+    for token_seq, freq in vocab.items():
+        tokens = token_seq.split()
+        for i in range(len(tokens) - 1):
+            pair = (tokens[i], tokens[i+1])
+            pairs[pair] += freq
     return pairs
 
 def get_unigram_counts(vocab):
@@ -51,7 +56,21 @@ def merge_vocab(pair, vocab):
     """
     merged_vocab = {}
     # TODO: 주어진 pair를 활용하여 vocab 내의 모든 token sequence에서 "a b"를 "ab"로 병합하는 코드를 작성하세요.
-
+    a, b = pair
+    for token_seq, freq in vocab.items():
+        tokens = token_seq.split()
+        new_tokens = []
+        i = 0
+        while i < len(tokens):
+            # 인접한 토큰이 pair와 일치하면 병합
+            if i < len(tokens) - 1 and (tokens[i], tokens[i+1]) == pair:
+                new_tokens.append(a + b)
+                i += 2  # 두 토큰 병합했으므로 건너뜀
+            else:
+                new_tokens.append(tokens[i])
+                i += 1
+        new_token_seq = " ".join(new_tokens)
+        merged_vocab[new_token_seq] = freq
     return merged_vocab
 
 def compute_likelihood_score(pair, pair_freq, unigram_counts, total_tokens):
@@ -62,7 +81,13 @@ def compute_likelihood_score(pair, pair_freq, unigram_counts, total_tokens):
     점수는 observed * log(observed/expected)로 계산합니다.
     """
     # TODO: likelihood 점수를 계산하는 코드를 작성하세요.
-    return 0
+    token1, token2 = pair
+    expected = (unigram_counts[token1] * unigram_counts[token2]) / total_tokens
+    # 예상 빈도가 0이면 0 점수 반환
+    if expected == 0:
+        return 0
+    score = pair_freq * math.log(pair_freq / expected)
+    return score
 
 def learn_wordpiece_vocab(file_path, num_merges=1000, target_vocab_size=1000):
     """
@@ -83,14 +108,17 @@ def learn_wordpiece_vocab(file_path, num_merges=1000, target_vocab_size=1000):
         # 각 후보 쌍에 대해 likelihood 점수를 계산하는 부분
         scores = {}
         # TODO: pair_stats를 순회하면서 각 pair에 대한 likelihood 점수를 계산하고 scores 딕셔너리에 저장하는 코드를 작성하세요.
-        
+        for pair, freq in pair_stats.items():
+            score = compute_likelihood_score(pair, freq, unigram_counts, total_tokens)
+            scores[pair] = score
+
         if not scores:
             break
         
         # TODO: scores 딕셔너리에서 가장 높은 점수를 가진 pair(best_pair)와 그 점수(best_score)를 결정하는 코드를 작성하세요.
-        best_pair = None   # 예시: best_pair = max(scores, key=scores.get)
-        best_score = 0     # 예시: best_score = scores[best_pair]
-        
+        best_pair = max(scores, key=scores.get)
+        best_score = scores[best_pair]
+
         # 점수가 음수이거나 변화가 없으면 종료
         if best_score <= 0:
             break
@@ -119,13 +147,13 @@ def save_vocab(vocab_set, output_path="vocab.txt"):
     with open(output_path, "w", encoding="utf-8") as f:
         for token in special_tokens:
             f.write(token + "\n")
-        for token in sorted(vocab_set):
+        for token in sorted(vocab_set): 
             f.write(token + "\n")
 
 if __name__ == "__main__":
     # test.txt 파일을 기반으로 vocabulary 생성
-    file_path = Path(__file__).resolve().parent.parent.parent / "tests" / "tests.txt"
+    file_path = Path(__file__).resolve().parent.parent / "tests" / "tests.txt"
     vocab_set, merges = learn_wordpiece_vocab(str(file_path), num_merges=1000, target_vocab_size=1000)
-    save_vocab(vocab_set, output_path="src/word_piece_tokenizer/vocab.txt")
+    save_vocab(vocab_set, output_path="./src/vocab.txt")
     print("Vocabulary 생성 완료. 총 토큰 수:", len(vocab_set))
     print("병합 기록 (일부):", merges[:10])

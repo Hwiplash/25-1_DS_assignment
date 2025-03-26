@@ -2,8 +2,8 @@ from collections import OrderedDict
 from pathlib import Path
 import os
 
-from .BasicTokenizer import BasicTokenizer
-from .utils import load_vocab, whitespace_tokenize
+from src.BasicTokenizer import BasicTokenizer
+from src.utils import load_vocab, whitespace_tokenize
 
 class WordpieceTokenizer:
     """WordPiece 토크나이저 클래스입니다."""

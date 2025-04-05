@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from transformers import AutoModel
-
+"""hhh"""
 class SimCSEModel(nn.Module):
     def __init__(self, model_name: str):
         super(SimCSEModel, self).__init__()

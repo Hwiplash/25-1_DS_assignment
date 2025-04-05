@@ -8,6 +8,7 @@ from model import SimCSEModel
 from dataset import SimCSEDataset
 import time
 from datetime import timedelta
+from tqdm import tqdm
 
 
 MODEL_NAME = "bert-base-uncased"
@@ -39,13 +40,13 @@ os.makedirs(CHECKPOINT_PATH, exist_ok=True)
 best_loss = float('inf')
 start_time = time.time()
 
-for epoch in range(EPOCHS):
+for epoch in tqdm(range(EPOCHS)):
     model.train()
     total_loss = 0
     epoch_start = time.time()
 
     #TODO 
-    for batch in dataloader:
+    for batch in tqdm(dataloader):
         optimizer.zero_grad()
 
         input_ids, attention_mask = batch
